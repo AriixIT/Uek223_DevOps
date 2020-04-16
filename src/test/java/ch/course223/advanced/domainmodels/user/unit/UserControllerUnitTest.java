@@ -65,7 +65,6 @@ public class UserControllerUnitTest {
     private static List<User> listOfUsersToBeTestedAgainst;
 
     private static UserDTO userDTOToBeTestedAgainst;
-    private static UserDTO wrongUserDTOToBeTestedAgainst;
     private static List<UserDTO> listOfUserDTOSToBeTestedAgainst;
 
     @BeforeClass
@@ -79,8 +78,6 @@ public class UserControllerUnitTest {
         Set<AuthorityDTO> authorityDTOSToBeTestedAgainst = Stream.of(new AuthorityDTO().setName("USER_SEE"), new AuthorityDTO().setName("USER_CREATE"), new AuthorityDTO().setName("USER_MODIFY"), new AuthorityDTO().setName("USER_DELETE")).collect(Collectors.toSet());
         Set<RoleDTO> roleDTOSToBeTestedAgainst = Stream.of(new RoleDTO().setName("BASIC_USER").setAuthorities(authorityDTOSToBeTestedAgainst)).collect(Collectors.toSet());
         userDTOToBeTestedAgainst = new UserDTO(uuidToBeTestedAgainst.toString()).setFirstName("John").setLastName("Doe").setEmail("john.doe@noseryoung.ch").setRoles(roleDTOSToBeTestedAgainst);
-        wrongUserDTOToBeTestedAgainst = new UserDTO(uuidToBeTestedAgainst.toString()).setFirstName("John").setLastName("Doe").setEmail("invalid email").setRoles(roleDTOSToBeTestedAgainst);
-
         listOfUserDTOSToBeTestedAgainst = Arrays.asList(userDTOToBeTestedAgainst, userDTOToBeTestedAgainst);
     }
 
@@ -161,19 +158,6 @@ public class UserControllerUnitTest {
         Assertions.assertThat(userArgumentCaptor.getValue().getFirstName().equals(userDTOToBeTestedAgainst.getEmail()));
         Assertions.assertThat(userArgumentCaptor.getValue().getRoles().stream().map(Role::getName).toArray()).containsExactlyInAnyOrder(userDTOToBeTestedAgainst.getRoles().stream().map(RoleDTO::getName).toArray());
         Assertions.assertThat(userArgumentCaptor.getValue().getRoles().stream().map(Role::getAuthorities).flatMap(Collection::stream).map(Authority::getName).toArray()).containsExactlyInAnyOrder(userDTOToBeTestedAgainst.getRoles().stream().map(RoleDTO::getAuthorities).flatMap(Collection::stream).map(AuthorityDTO::getName).toArray());
-    }
-
-    @Test
-    @WithMockUser
-    public void updateUserById_requestUserDTOToBeUpdated_returnEmailInvalidError() throws Exception {
-        String userDTOAsJsonString = new ObjectMapper().writeValueAsString(wrongUserDTOToBeTestedAgainst);
-
-        mvc.perform(
-                MockMvcRequestBuilders.put("/users/{id}", userDTOToBeTestedAgainst.getId())
-                        .content(userDTOAsJsonString)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
